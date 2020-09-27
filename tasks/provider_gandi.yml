@@ -1,0 +1,37 @@
+---
+
+- include_tasks: 'generate_sshfp_record.yml'
+  when: >
+    __dns_record_item.type | default(dns_record_default_type) | upper == 'SSHFP'
+    and __dns_record_item.state | default(dns_record_default_state) == 'present'
+    and __dns_record_item.value | default(dns_record_default_value) is not defined
+
+- name: 'generate gandi live dns url'
+  set_fact:
+    __dns_record_gandi_url: "https://dns.api.gandi.net/api/v5/domains/{{ __dns_record_item.domain | default(dns_record_default_domain) }}/records/{{ __dns_record_item.hostname | default(dns_record_default_hostname) }}/{{ __dns_record_item.type | default(dns_record_default_type) | upper }}"
+
+- name: 'add record to gandi live dns'
+  uri:
+    url: "{{ __dns_record_gandi_url }}"
+    method: 'POST'
+    headers:
+      X-Api-Key: "{{ dns_record_providers[__dns_record_item.provider].auth_token }}"
+    body_format: 'json'
+    body:
+      rrset_values:
+        - "{{ __dns_record_item.value | default(dns_record_default_value) | default(_dns_record_current_computed_value) }}"
+      rrset_ttl: "{{ __dns_record_item.ttl | default(dns_record_default_ttl) }}"
+    return_content: True
+    status_code: [200, 201]
+  when: __dns_record_item.state | default(dns_record_default_state) == 'present'
+
+- name: 'delete record from gandi live dns'
+  uri:
+    url: "{{ __dns_record_gandi_url }}"
+    method: 'DELETE'
+    headers:
+      Authorization: "{{ dns_record_providers[__dns_record_item.provider].auth_token }}"
+    body_format: 'json'
+    return_content: True
+    status_code: [200, 201]
+  when: __dns_record_item.state | default(dns_record_default_state) == 'absent'

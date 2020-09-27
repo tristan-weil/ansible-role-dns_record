@@ -1,0 +1,27 @@
+---
+##############################################################################
+# Variables
+##############################################################################
+_dns_record_nsupdate_pkgs: "{{ _dns_record_nsupdate_pkgs_by_os_family[ ansible_facts['os_family'] ] }}"
+
+##############################################################################
+# Variables
+##############################################################################
+_dns_record_sshfp_pub_key_algo_codes:
+  rsa: 1
+  dss: 2
+  ecdsa: 3
+  ed25519: 4
+
+_dns_record_sshfp_pub_key_hashes_codes:
+  sha1: 1
+  sha256: 2
+
+##############################################################################
+# Distributions' dictionaries
+##############################################################################
+_dns_record_nsupdate_pkgs_by_os_family:
+  Debian:
+    - 'python3-dnspython'
+  OpenBSD:
+    - 'py3-dnspython'

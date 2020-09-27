@@ -1,0 +1,14 @@
+---
+
+dns_record_providers: {}
+
+dns_record_default_domain: "{{ ansible_facts['nodename'].split('.')[1:] | join('.') }}"
+dns_record_default_hostname: "{{ ansible_facts['hostname'] }}"
+dns_record_default_ttl: 3600
+# dns_record_default_type:
+# dns_record_default_value:
+dns_record_default_state: 'present'
+
+dns_record_default_config: {}
+
+dns_record_list: []

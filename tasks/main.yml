@@ -1,0 +1,6 @@
+---
+
+- include_tasks: "provider_{{ dns_record_providers[__dns_record_item.provider].name }}.yml"
+  loop: "{{ dns_record_list }}"
+  loop_control:
+    loop_var: __dns_record_item

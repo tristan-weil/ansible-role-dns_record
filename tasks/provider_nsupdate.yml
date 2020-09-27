@@ -1,0 +1,26 @@
+---
+
+- include_role:
+    name: 'ansible-role-pkg'
+  vars:
+    pkg_list: "{{ _dns_record_nsupdate_pkgs }}"
+
+- include_tasks: 'generate_sshfp_record.yml'
+  when: >
+    __dns_record_item.type | default(dns_record_default_type) | upper == 'SSHFP'
+    and __dns_record_item.state | default(dns_record_default_state) == 'present'
+    and __dns_record_item.value | default(dns_record_default_value) is not defined
+
+- name: 'add/delete record with nsupdate'
+  nsupdate:
+    key_name: "{{ dns_record_providers[__dns_record_item.provider].key_name }}"
+    key_secret: "{{ dns_record_providers[__dns_record_item.provider].key_secret }}"
+    key_algorithm: "{{ dns_record_providers[__dns_record_item.provider].key_algorithm | default('hmac-sha512') }}"
+    server: "{{ dns_record_providers[__dns_record_item.provider].server | default('127.0.0.1') }}"
+    port: "{{ dns_record_providers[__dns_record_item.provider].port | default(53) }}"
+    type: "{{ __dns_record_item.type | default(dns_record_default_type) | upper }}"
+    ttl: "{{ __dns_record_item.ttl | default(dns_record_default_ttl) }}"
+    record: "{{ __dns_record_item.hostname | default(dns_record_default_hostname) }}"
+    zone: "{{ __dns_record_item.domain | default(dns_record_default_domain) }}"
+    value: "{{ __dns_record_item.value | default(dns_record_default_value) | default(_dns_record_current_computed_value) }}"
+    state: "{{ __dns_record_item.state | default(dns_record_default_state) }}"

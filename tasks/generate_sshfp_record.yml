@@ -1,0 +1,20 @@
+---
+
+- name: 'generate the SSHFP record'
+  shell: |
+    set -o pipefail
+    ssh-keygen -r "{{ __dns_record_item.hostname | default(dns_record_default_hostname) }}." -f "{{ __dns_record_item.sshfp_pub_key_path | default(dns_record_default_config.sshfp_pub_key_path) }}" | \
+      awk '$4=={{ _dns_record_sshfp_pub_key_algo_codes[__dns_record_item.sshfp_pub_key_type | default(dns_record_default_config.sshfp_pub_key_type)] }} && $5=={{ _dns_record_sshfp_pub_key_hashes_codes[__dns_record_item.sshfp_pub_key_hash | default(dns_record_default_config.sshfp_pub_key_hash)] }} {print $4" "$5" "$6}'
+  changed_when: False
+  register: __dns_record_sshfp_keygen_result
+
+- name: 'check the SSHFP record generation'
+  assert:
+    that:
+      - __dns_record_sshfp_keygen_result.stdout is defined
+      - __dns_record_sshfp_keygen_result.stdout
+    fail_msg: 'Unable to find the SSHFP record'
+
+- name: 'put the result in hostvars'
+  set_fact:
+    _dns_record_current_computed_value: "{{ __dns_record_sshfp_keygen_result.stdout }}"

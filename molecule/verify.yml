@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+  name: 'Verify'
+  become: True
+  gather_facts: True
+
+  tasks:
+    - name: 'Nothing to test'
+      debug:
+        msg: 'hello'
